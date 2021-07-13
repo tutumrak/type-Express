@@ -1,7 +1,10 @@
 import * as express from 'express';
+import { NextFunction } from 'express';
 import postModel from './postsModel';
 import Post from './postsInterface';
 import Controller from '../interfaces/controller.interface';
+import HttpException from '../exceptions/httpException';
+import PostNotFound from '../exceptions/postNotFound';
 class PostsController implements Controller {
     public path: string = '/posts';
     public router: express.IRouter = express.Router();
@@ -14,36 +17,48 @@ class PostsController implements Controller {
         this.router.patch(`${this.path}/:id`,this.updatePostById)
         this.router.get(this.path, this.getAllPosts);
         this.router.get(`${this.path}/:id`, this.getPostById);
+        this.router.delete(this.path+, this.delAllPosts)
     }
-    createPost = (req: express.Request, res: express.Response) => {
+    private createPost = (req: express.Request, res: express.Response) => {
         const postData: Post = req.body;
         const createdPost = new postModel(postData);
         createdPost.save()
         .then((created) => res.send(created))
         .catch((err) => console.log(err));
     }
-    deletePost = (req: express.Request, res: express.Response) => {
+    private deletePost = (req: express.Request, res: express.Response, next: NextFunction) => {
         const id = req.params.id;
         postModel.findByIdAndDelete(id)
-        .then((result) => res.send(200))
-        .catch((err) => res.send(404));
+        .then((post) =>{
+            if (post) res.send(`Post with ${id} has been deleted`)
+            else next(new PostNotFound(id));
+        });
     }
-    getAllPosts = (req: express.Request, res: express.Response) => {
+    private getAllPosts = (req: express.Request, res: express.Response) => {
         postModel.find()
         .then((posts) => res.send(posts));
     }
-    getPostById = (req: express.Request, res: express.Response) => {
-        const postId = req.params.id;
-        postModel.findById(postId)
-        .then((result) => res.send(result))
-        .catch((err) => res.send(err));
+    private delAllPosts = (req: express.Request, res: express.Response) => {
+        postModel.deleteMany()
+        .then(() => res.send(`deleted all posts`))
+        .catch((err) => console.log(err));
     }
-    updatePostById = (req: express.Request, res: express.Response) => {
-        const id = req.params.id;
+    private getPostById = (req: express.Request, res: express.Response, next: NextFunction) => {
+        const id: string = (req.params.id);
+        postModel.findById(id)
+            .then((post) => {
+                if (post) res.send(`Post with ${id} has been deleted`)
+                else next(new PostNotFound(id));
+            });
+    }
+    private updatePostById = (req: express.Request, res: express.Response, next: NextFunction) => {
+        const id: string = req.params.id;
         const postData: Post = req.body
         postModel.findByIdAndUpdate(id, postData, {new: true})
-        .then((result) => res.send(result))
-        .catch((err) => res.send(err));
+            .then((post) => {
+                if (post) res.send(`Post with ${id} has been deleted`)
+                else next(new PostNotFound(id));
+            });
 
     }
 }
