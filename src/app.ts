@@ -1,7 +1,8 @@
-import * as express from 'express';
-import * as mongoose from 'mongoose';
+import express from 'express';
+import mongoose from 'mongoose';
 import Controller from './interfaces/controller.interface';
 import errorHandler from './middleware/errorhandler';
+
 export class App {
     private port: number;
     private app: express.Application;
@@ -9,14 +10,18 @@ export class App {
         this.port = port;
         this.app = express();
         this.connectToDatabase()
-            .then(() => this.app.listen(this.port, () => `app listening on port ${this.port}`))
+            .then(() => this.app.listen(this.port))
             .catch((err) => console.log(err));
+
+        this.initializeMiddleware();
         this.initializeRoutes(controllers);
-        this.initializeMiddlewares();
+        this.initializeErrorHandlers();
     }
-    initializeMiddlewares(){
+    initializeMiddleware(){
         this.app.use(express.urlencoded({extended: true}));
         this.app.use(express.json());
+    }
+    initializeErrorHandlers(){
         this.app.use(errorHandler);
     }
     initializeRoutes(controllers: Controller[]){

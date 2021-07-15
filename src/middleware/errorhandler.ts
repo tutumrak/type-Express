@@ -1,7 +1,7 @@
 import HttpException from "../exceptions/httpException";
-import {Request, Response, NextFunction} from 'express';
-function errorHandler(err: HttpException, req: Request, res: Response, next: NextFunction) {
-    const status: number = err.status;
-    const msg: string = err.message;
-    res.status(err.status).send({status, msg});
-}export default errorHandler;
+import {Request, Response, NextFunction } from 'express';
+function errorHandler(error: HttpException, _req: Request, res: Response, _next: NextFunction) {
+    const status: number = error.status || 500;
+    const message: string = error.message || 'Oops, something went wrong';
+    res.status(status).send({status, message});
+} export default errorHandler;

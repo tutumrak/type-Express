@@ -1,6 +1,6 @@
-interface Post {
+interface PostI {
     author: string;
     title: string;
     content: string;
 }
-export default Post;
+export default PostI;
