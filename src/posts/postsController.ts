@@ -17,7 +17,7 @@ class PostsController implements Controller {
         this.router.patch(`${this.path}/:id`,this.updatePostById)
         this.router.get(this.path, this.getAllPosts);
         this.router.get(`${this.path}/:id`, this.getPostById);
-        this.router.delete(this.path+, this.delAllPosts)
+        this.router.delete(this.path, this.delAllPosts)
     }
     private createPost = (req: express.Request, res: express.Response) => {
         const postData: Post = req.body;
