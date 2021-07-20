@@ -1,5 +1,5 @@
 interface UserI {
-    isAdmin: boolean;
+    _id: string;
     userName: string;
     email: string;
     password: string;

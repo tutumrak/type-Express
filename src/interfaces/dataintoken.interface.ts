@@ -1,0 +1,3 @@
+interface DataInToken {
+    subjectId: string;
+}
