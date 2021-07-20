@@ -8,7 +8,8 @@ function validationMiddleware<_T>(type:any, skipMissingProperties = false): Requ
         validate(plainToClass(type, req.body), { skipMissingProperties })
         .then((errors: ValidationError[]) => {
             if (errors.length > 0) {
-                const message: string = errors.map((error) => Object.values(error)).join(', ');
+                const message: string = errors.map((error: ValidationError) => Object.values(!error.constraints)).join('');
+                next(new HttpException(400, message));
             }else next();
         });
     }

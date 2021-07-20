@@ -5,7 +5,7 @@ import postModel from './postsModel';
 import PostI from '../interfaces/postsInterface';
 import PostDto from '../posts/postsDto';
 import Controller from '../interfaces/controller.interface';
-import PostNotFound from '../exceptions/postNotFound';
+import NotFound from '../exceptions/NotFound';
 class PostsController implements Controller{
     public path: string = '/posts';
     private post = postModel;
@@ -36,7 +36,7 @@ class PostsController implements Controller{
         this.post.findByIdAndDelete(id)
         .then((post) => { 
             if (post) res.send(`Post with id of ${id} has been deleted.`)
-            else next(new PostNotFound(id));
+            else next(new NotFound(`Post`));
          });
     }
     private getAllPosts = (_req: express.Request, res: express.Response) => {
@@ -53,7 +53,7 @@ class PostsController implements Controller{
         this.post.findById(id)
             .then((post) => { 
                 if (post) res.send(post);
-                else next(new PostNotFound(id));
+                else next(new NotFound('Post'));
              });
     }
     private updatePostById = (req: express.Request, res: express.Response, next: NextFunction) => {
@@ -64,7 +64,7 @@ class PostsController implements Controller{
                 if (post) {
                     res.send(`Post with id of: ${id} has been updated`);
                 }else {
-                    next(new PostNotFound(id));
+                    next(new NotFound('Post'));
                 }
             });
 
