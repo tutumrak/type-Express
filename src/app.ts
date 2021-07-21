@@ -2,7 +2,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import Controller from './interfaces/controller.interface';
 import errorHandler from './middleware/errorhandler';
-
+import cookieParser from 'cookie-parser';
 export class App {
     private app: express.Application;
     constructor(port: number, controllers: Controller[]) {
@@ -16,6 +16,7 @@ export class App {
     initializeMiddleware(){
         this.app.use(express.urlencoded({extended: true}));
         this.app.use(express.json());
+        this.app.use(cookieParser())
     }
     initializeErrorHandlers(){
         this.app.use(errorHandler);

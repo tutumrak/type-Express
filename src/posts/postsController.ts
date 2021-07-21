@@ -1,54 +1,59 @@
-import express from 'express';
-import { NextFunction } from 'express';
+
+import { NextFunction, Request, Response, Router } from 'express';
 import validationMiddleware from '../middleware/validationMiddleware';
 import postModel from './postsModel';
-import PostI from '../interfaces/postsInterface';
+import PostI from './postsInterface';
 import PostDto from '../posts/postsDto';
 import Controller from '../interfaces/controller.interface';
 import NotFound from '../exceptions/NotFound';
+import authMiddleware from '../middleware/authMiddleware';
+import UserI from 'src/users/user.interface';
 class PostsController implements Controller{
     public path: string = '/posts';
     private post = postModel;
-    public router: express.IRouter = express.Router();
+    public router: Router = Router();
     constructor() {
         this.initializeRoutes();
     }
     initializeRoutes(){
+        this.router.get(this.path, this.getAllPosts);
+        this.router.all(`${this.path}/*`, authMiddleware)
+        this.router.get(`${this.path}/:id`, this.getPostsById); 
         this.router.post(this.path, validationMiddleware(PostDto), this.createPost);
         this.router.delete(`${this.path}/:id`, this.deletePost);
         this.router.patch(`${this.path}/:id`, validationMiddleware(PostDto, true), this.updatePostById)
-        this.router.get(this.path, this.getAllPosts);
-        this.router.get(`${this.path}/:id`, this.getPostById);
         this.router.delete(this.path, this.delAllPosts)
     }
-    private createPost = (req: express.Request, res: express.Response, _next: NextFunction) => {
-        const postData: PostI = req.body;
-        console.log(req.body);
-        console.log(req.params.id);
-        
-        const newPost = new this.post(postData);
-        newPost.save()
-        .then(() => res.send(req.body))
-        .catch((err) => console.log(err));
+    private createPost = async (req: Request, res: Response, _next: NextFunction) => {
+        const postData: PostI = req.body; 
+        const ownerId: string = req.user._id;         
+        const newPost = await this.post.create({
+            ...postData,
+            author: ownerId
+        });
+        res.send(newPost);
     }
-    private deletePost = (req: express.Request, res: express.Response, next: NextFunction) => {
-        const id = req.params.id;
-        this.post.findByIdAndDelete(id)
-        .then((post) => { 
-            if (post) res.send(`Post with id of ${id} has been deleted.`)
-            else next(new NotFound(`Post`));
-         });
+    private deletePost = async (req: Request, res: Response, _next: NextFunction) => {
+        const userId = req.user._id;
+        const postToDelete = await this.post.findById(req.params.id);
+        const postAuthorId = postToDelete?.author;
+        console.log(userId, postAuthorId);
+        if (userId !== postAuthorId) {
+            res.send({Status: 'Failed', Reason: 'Not Authorized'});
+        }else {
+            await this.post.findByIdAndDelete(req.params.id);
+        }
     }
-    private getAllPosts = (_req: express.Request, res: express.Response) => {
+    private getAllPosts = (_req: Request, res: Response) => {
         this.post.find()
         .then((posts) => res.send(posts));
     }
-    private delAllPosts = (_req: express.Request, res: express.Response) => {
+    private delAllPosts = (_req: Request, res: Response) => {
         this.post.deleteMany()
         .then(() => res.send(`deleted all posts`))
         .catch((err) => console.log(err));
     }
-    private getPostById = (req: express.Request, res: express.Response, next: NextFunction) => {
+    private getPostsById = (req: Request, res: Response, next: NextFunction) => {
         const id: string = (req.params.id);
         this.post.findById(id)
             .then((post) => { 
@@ -56,7 +61,7 @@ class PostsController implements Controller{
                 else next(new NotFound('Post'));
              });
     }
-    private updatePostById = (req: express.Request, res: express.Response, next: NextFunction) => {
+    private updatePostById = (req: Request, res: Response, next: NextFunction) => {
         const id: string = req.params.id;
         const postData: PostI = req.body
         this.post.findByIdAndUpdate(id, postData, {new: true})
@@ -67,7 +72,6 @@ class PostsController implements Controller{
                     next(new NotFound('Post'));
                 }
             });
-
     }
 }
 export default PostsController;

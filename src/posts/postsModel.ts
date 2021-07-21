@@ -1,5 +1,5 @@
 import * as mongoose from 'mongoose';
-import Post from '../interfaces/postsInterface';
+import Post from './postsInterface';
 
 const postSchema = new mongoose.Schema({
     author: String,
