@@ -10,7 +10,8 @@ function validationMiddleware<_T>(type:any, skipMissingProperties = false): Requ
             if (errors.length > 0) {
                 const message: string = errors.map((error: ValidationError) => Object.values(!error.constraints)).join('');
                 next(new HttpException(400, message));
-            }else next();
+            }else console.log('pass the peas');
+             next();
         });
     }
 }export default validationMiddleware;

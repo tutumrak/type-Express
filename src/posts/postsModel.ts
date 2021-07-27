@@ -1,8 +1,11 @@
 import * as mongoose from 'mongoose';
-import Post from './postsInterface';
+import Post from '../interfaces/postsInterface';
 
 const postSchema = new mongoose.Schema({
-    author: String,
+    author: {
+        ref: 'Users',
+        type: mongoose.Schema.Types.ObjectId,
+    },
     title: String,
     content: String,
 });

@@ -31,5 +31,5 @@
   "include": [
     "./src/**/*.tsx",
     "./src/**/*.ts"
-  ]
+, "dtos/postsDto.ts"  ]
 }
